@@ -7,7 +7,7 @@ class Block
   def initialize(x, y, color, manager)
     self.square = Square.new(x, y, 19, color)
     self.manager = manager
-    self.manager.blocks << self
+    self.manager.blocks << self unless manager.nil?
   end
 
   def go
@@ -28,6 +28,22 @@ class Block
     if manager.position_available(new_x, y)
       new_position(new_x, y)
     end
+  end
+
+  def can_you_go_left?
+    manager.should_i_move?(self)
+  end
+
+  def can_you_go_right?
+    manager.should_i_move?(self)
+  end
+
+  def can_you_go_down?
+    manager.should_i_move?(self)
+  end
+
+  def are_you_at_position?(x, y)
+    self.x == x and self.y == y
   end
 
   def new_position(new_x, new_y)

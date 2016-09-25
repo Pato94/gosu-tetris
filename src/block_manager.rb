@@ -1,5 +1,8 @@
 require_relative 'block'
+require_relative 'shape'
 require 'gosu'
+
+shape_colors =
 
 class BlockManager
   attr_accessor :x, :y, :height, :width, :blocks, :tempo, :time_since_last_update
@@ -23,10 +26,8 @@ class BlockManager
       move_right
     end
     self.time_since_last_update += dt
-    if self.time_since_last_update > tempo or Gosu::button_down? Gosu::KbDown or Gosu::button_down? Gosu::GpDown
-      if self.time_since_last_update > tempo
-        self.time_since_last_update -= tempo
-      end
+    if self.time_since_last_update > tempo
+      self.time_since_last_update -= tempo
       self.blocks.each do |block|
         block.go
       end
@@ -35,25 +36,29 @@ class BlockManager
   end
 
   def check_for_updates
-    Block.new(x, y, 0xffaaaaaa, self) if blocks.all? do |block|
-      !should_i_move?(block)
+    TestingShape.new(x, y, [ 0xff4285f4, 0xffea4335, 0xfffbbc05, 0xff34a853 ].sample, self) if blocks.all? do |block|
+      !block.can_you_go_down?
     end
   end
 
   def move_right
-    self.blocks.select do |block|
-      should_i_move?(block)
-    end.each do |block|
-      block.move_right
-    end
+    self.blocks
+        .select do |block|
+          block.can_you_go_right?
+        end
+        .each do |block|
+          block.move_right
+        end
   end
 
   def move_left
-    self.blocks.select do |block|
-      should_i_move?(block)
-    end.each do |block|
-      block.move_left
-    end
+    self.blocks
+        .select do |block|
+          block.can_you_go_left?
+        end
+        .each do |block|
+          block.move_left
+        end
   end
 
   def draw
@@ -62,18 +67,22 @@ class BlockManager
     end
   end
 
-  def should_i_move?(block)
-    position_available(block.x, block.y + block.size)
+  def should_i_move?(block, ignoring = nil)
+    position_available(block.x, block.y + block.size, ignoring)
   end
 
-  def position_available(x, y)
-    !out_of_bounds(x, y) && !any_block_at(x, y)
+  def position_available(x, y, ignoring = nil)
+    !out_of_bounds(x, y) && !any_block_at(x, y, ignoring)
   end
 
-  def any_block_at(x, y)
-    self.blocks.any? do |block|
-      block.x == x && block.y == y
-    end
+  def any_block_at(x, y, ignoring = nil)
+    self.blocks
+        .select do |block|
+          block != ignoring
+        end
+        .any? do |block|
+          block.are_you_at_position?(x, y)
+        end
   end
 
   def out_of_bounds(x, y)
