@@ -5,7 +5,7 @@ class Block
   attr_accessor :square, :manager
 
   def initialize(x, y, color, manager)
-    self.square = Square.new(x, y, 20, color)
+    self.square = Square.new(x, y, 19, color)
     self.manager = manager
     self.manager.blocks << self
   end
@@ -13,6 +13,20 @@ class Block
   def go
     if manager.should_i_move?(self)
       new_position(x, y + size)
+    end
+  end
+
+  def move_right
+    new_x = x + size
+    if manager.position_available(new_x, y)
+      new_position(new_x, y)
+    end
+  end
+
+  def move_left
+    new_x = x - size
+    if manager.position_available(new_x, y)
+      new_position(new_x, y)
     end
   end
 
@@ -34,6 +48,6 @@ class Block
   end
 
   def size
-    self.square.size
+    self.square.size + 1
   end
 end
